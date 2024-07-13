@@ -6,28 +6,26 @@ api_hash = '15b14450170fa3e2e03ca379bd9eeca8'
 phone_number = '+967735540876'
 
 # الكلمات الرئيسية التي تريد مراقبتها
-keywords =[ 'تقرير', 'واجب', 'بحث', 'مساعدة', 'مشكلة', 'استفسار','يساعدني', 'يحل', 'يعرف', 'يسوي', 'احد', 'يساعد', 'هيلب', 'تعرف', 'مضمون', 'حد', 'مجرب']
+keywords = ['تقرير', 'واجب', 'بحث', 'مساعدة', 'مشكلة', 'استفسار', 'يساعدني', 'يحل', 'يعرف', 'يسوي', 'احد', 'يساعد', 'هيلب', 'تعرف', 'مضمون', 'حد', 'مجرب']
 
-a# إنشاء عميل Telethon
+# إنشاء عميل Telethon
 client = TelegramClient('hennnnn', api_id, api_hash)
 
 @client.on(events.NewMessage)
 async def handler(event):
-    chat_id = event.chat_id
-    user_id = event.sender_id
-    text = event.message.message
     sender = await event.get_sender()  # الحصول على معلومات المرسل
-    username = sender.username  # اسم المستخدم الخاص بالمرسل
+
+    # التحقق من أن الرسالة ليست من بوت وأنها ليست رسالة خاصة
+    if sender.bot or event.is_private:
+        return
+
+    text = event.message.message
 
     # التحقق من وجود أي من الكلمات الرئيسية في النص
     for keyword in keywords:
         if keyword in text:
-            if username:
-                print(f"User @{username} (ID: {user_id}) in chat {chat_id} mentioned '{keyword}': {text}")
-                await client.send_message('me', f"User @{username} (ID: {user_id}) in chat {chat_id} mentioned '{keyword}': {text}")
-            else:
-                print(f"User {user_id} in chat {chat_id} mentioned '{keyword}': {text}")
-                await client.send_message('me', f"User {user_id} in chat {chat_id} mentioned '{keyword}': {text}")
+            # إعادة توجيه الرسالة الأصلية إلى نفسك بصمت
+            await client.forward_messages('me', event.message, silent=True)
             break
 
 async def main():
